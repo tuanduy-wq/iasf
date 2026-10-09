@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>User Management</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <style>
+        body { background: #e8e8e6; }
+        .generic-container {
+            width: 80%; margin: 30px auto; padding: 20px;
+            background: #ededeb; border: 1px solid #ddd; border-radius: 4px;
+            box-shadow: 0 0 30px #888;
+        }
+        .panel-heading { background: #f5f5f5 !important; }
+        .panel-heading .lead { margin: 0; font-size: 20px; }
+        .form-horizontal .control-label { text-align: left; }
+        .btn-act { min-width: 80px; margin-left: 10px; }
+        .table > thead > tr > th { text-transform: uppercase; }
+        .table > tbody > tr > td { vertical-align: middle; }
+    </style>
+</head>
+<body>
+<div class="generic-container">
+
+    <!-- ===== PANEL: USER FORM ===== -->
+    <div class="panel panel-default">
+        <div class="panel-heading"><span class="lead">User</span></div>
+        <div class="panel-body">
+
+            <div class="alert alert-success auto-hide" th:if="${successMessage}"
+                 th:text="${successMessage}"></div>
+            <div class="alert alert-danger" th:if="${errorMessage}"
+                 th:text="${errorMessage}"></div>
+
+            <form class="form-horizontal" th:action="@{/users}" th:object="${user}"
+                  method="post" id="userForm">
+                <input type="hidden" th:field="*{id}">
+
+                <div class="form-group" th:classappend="${#fields.hasErrors('name')} ? 'has-error'">
+                    <label class="col-md-2 control-label" for="name">Name</label>
+                    <div class="col-md-7">
+                        <input type="text" th:field="*{name}" class="form-control input-sm"
+                               placeholder="Enter your name"/>
+                        <span class="help-block" th:if="${#fields.hasErrors('name')}"
+                              th:errors="*{name}"></span>
+                    </div>
+                </div>
+
+                <div class="form-group" th:classappend="${#fields.hasErrors('age')} ? 'has-error'">
+                    <label class="col-md-2 control-label" for="age">Age</label>
+                    <div class="col-md-7">
+                        <input type="number" th:field="*{age}" class="form-control input-sm"
+                               placeholder="Enter your Age."/>
+                        <span class="help-block" th:if="${#fields.hasErrors('age')}"
+                              th:errors="*{age}"></span>
+                    </div>
+                </div>
+
+                <div class="form-group" th:classappend="${#fields.hasErrors('salary')} ? 'has-error'">
+                    <label class="col-md-2 control-label" for="salary">Salary</label>
+                    <div class="col-md-7">
+                        <input type="number" step="any" th:field="*{salary}" class="form-control input-sm"
+                               placeholder="Enter your Salary."/>
+                        <span class="help-block" th:if="${#fields.hasErrors('salary')}"
+                              th:errors="*{salary}"></span>
+                    </div>
+                </div>
+
+                <div class="text-right">
+                    <button type="submit" class="btn btn-primary btn-sm btn-act"
+                            th:text="${user.id == null} ? 'Add' : 'Update'">Add</button>
+                    <button type="button" id="btnReset" class="btn btn-warning btn-sm btn-act">Reset Form</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== PANEL: LIST OF USERS ===== -->
+    <div class="panel panel-default">
+        <div class="panel-heading clearfix">
+            <span class="lead">List of Users</span>
+
+            <!-- Search -->
+            <form class="form-inline pull-right" th:action="@{/}" method="get">
+                <input type="text" name="keyword" th:value="${keyword}"
+                       class="form-control input-sm" placeholder="Search by name..."/>
+                <button type="submit" class="btn btn-info btn-sm">Search</button>
+                <a th:href="@{/}" class="btn btn-default btn-sm">Clear</a>
+            </form>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>NAME</th>
+                    <th>AGE</th>
+                    <th>SALARY</th>
+                    <th width="200"></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="u : ${users}">
+                    <td th:text="${u.id}"></td>
+                    <td th:text="${u.name}"></td>
+                    <td th:text="${u.age}"></td>
+                    <td th:text="${u.salary}"></td>
+                    <td>
+                        <a th:href="@{/users/edit/{id}(id=${u.id})}"
+                           class="btn btn-success btn-sm btn-act">Edit</a>
+                        <a th:href="@{/users/delete/{id}(id=${u.id})}"
+                           class="btn btn-danger btn-sm btn-act btn-delete">Remove</a>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(users)}">
+                    <td colspan="5" class="text-center text-muted">No users found</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script>
+    $(function () {
+        // Reset Form: về trang trống, chế độ Add
+        $('#btnReset').on('click', function () {
+            window.location.href = '/';
+        });
+
+        // Xác nhận trước khi xóa
+        $('.btn-delete').on('click', function (e) {
+            if (!confirm('Are you sure you want to remove this user?')) {
+                e.preventDefault();
+            }
+        });
+
+        // Tự ẩn thông báo thành công sau 3 giây
+        $('.auto-hide').delay(3000).fadeOut(500);
+    });
+</script>
+</body>
+</html>
